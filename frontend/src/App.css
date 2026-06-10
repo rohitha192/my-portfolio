@@ -1,0 +1,182 @@
+/* General */
+body {
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  background-color: #0d0d1a;
+  color: white;
+  scroll-behavior: smooth;
+}
+.App {
+  text-align: center;
+}
+
+/* Navbar */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 50px;
+  background: #111827;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+.navbar .logo {
+  color: #60a5fa;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+.navbar ul {
+  list-style: none;
+  display: flex;
+  gap: 25px;
+  margin: 0;
+  padding: 0;
+}
+.navbar ul li a {
+  color: #d1d5db;
+  text-decoration: none;
+  transition: 0.3s;
+  font-weight: 500;
+}
+.navbar ul li a:hover {
+  color: #f472b6;
+}
+
+/* Hero Section */
+.hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 80px 100px;
+  min-height: 100vh;
+  flex-wrap: wrap;
+}
+.hero-text {
+  max-width: 50%;
+  text-align: left;
+}
+.hero-text h3 {
+  font-size: 1.2rem;
+  font-weight: 400;
+}
+.hero-text h1 {
+  font-size: 2.8rem;
+  margin: 10px 0;
+}
+.hero-text h2 {
+  font-size: 1.5rem;
+  font-weight: 400;
+}
+.highlight {
+  color: #60a5fa;
+}
+.pink {
+  color: #f472b6;
+}
+.hero-text p {
+  margin: 20px 0;
+  line-height: 1.6;
+  color: #d1d5db;
+}
+
+/* Buttons */
+.buttons {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+}
+.btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: 0.3s;
+}
+.pink-btn {
+  background: transparent;
+  border: 2px solid #f472b6;
+  color: #f472b6;
+}
+.pink-btn:hover {
+  background: #f472b6;
+  color: white;
+}
+.blue-btn {
+  background: transparent;
+  border: 2px solid #60a5fa;
+  color: #60a5fa;
+}
+.blue-btn:hover {
+  background: #60a5fa;
+  color: white;
+}
+
+/* Social Icons */
+.socials {
+  margin-top: 25px;
+  display: flex;
+  gap: 20px;
+}
+.socials a {
+  font-size: 1.5rem;
+  color: #60faff;
+  transition: 0.3s;
+}
+.socials a:hover {
+  color: #f472b6;
+}
+
+/* Profile Image Glow */
+.hero-img {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.glow-border {
+  padding: 8px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #60a5fa, #f472b6);
+  display: inline-block;
+  animation: glow 2s infinite alternate;
+}
+.glow-border img {
+  width: 250px;
+  height: 250px;
+  border-radius: 50%;
+  border: 6px solid #0d0d1a;
+  object-fit: cover;
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 10px #60a5fa, 0 0 20px #9333ea;
+  }
+  to {
+    box-shadow: 0 0 20px #f472b6, 0 0 30px #60a5fa;
+  }
+}
+
+/* Sections (About, Skills, Projects, Certifications, Education, Contact) */
+.section {
+  padding: 80px 100px;
+  text-align: left;
+}
+.section h2 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: #60a5fa;
+}
+.section p {
+  line-height: 1.6;
+  color: #d1d5db;
+}
+
+/* Footer */
+.App-footer {
+  background: #111827;
+  padding: 20px;
+  color: #9ca3af;
+  margin-top: 50px;
+  font-size: 0.9rem;
+}
