@@ -14,6 +14,7 @@ if (pass.length !== 16) {
   console.log("If Google showed 'abcd efgh ijkl mnop', use: abcdefghijklmnop");
 }
 
+
 const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
