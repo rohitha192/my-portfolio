@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import "./App.css";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
+import { HiMenu, HiX } from "react-icons/hi";
 
 // Components
 import About from "./components/about";
@@ -17,20 +18,43 @@ const GITHUB_URL = "https://github.com/rohitha192";
 const LINKEDIN_URL =
   "https://www.linkedin.com/in/channamallu-rohitha-aa4503314";
 
+const NAV_LINKS = [
+  { href: "#home", label: "Home" },
+  { href: "#about", label: "About" },
+  { href: "#skills", label: "Skills" },
+  { href: "#projects", label: "Projects" },
+  { href: "#certifications", label: "Certifications" },
+  { href: "#education", label: "Education" },
+  { href: "#contact", label: "Contact" },
+];
+
 function App() {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const closeMenu = () => setMenuOpen(false);
+
   return (
     <div className="App">
       {/* Navbar */}
       <nav className="navbar">
         <h2 className="logo">Portfolio</h2>
-        <ul>
-          <li><a href="#home">Home</a></li>
-          <li><a href="#about">About</a></li>
-          <li><a href="#skills">Skills</a></li>
-          <li><a href="#projects">Projects</a></li>
-          <li><a href="#certifications">Certifications</a></li>
-          <li><a href="#education">Education</a></li>
-          <li><a href="#contact">Contact</a></li>
+        <button
+          type="button"
+          className="menu-toggle"
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen((open) => !open)}
+        >
+          {menuOpen ? <HiX /> : <HiMenu />}
+        </button>
+        <ul className={menuOpen ? "nav-links open" : "nav-links"}>
+          {NAV_LINKS.map(({ href, label }) => (
+            <li key={href}>
+              <a href={href} onClick={closeMenu}>
+                {label}
+              </a>
+            </li>
+          ))}
         </ul>
       </nav>
 
@@ -112,7 +136,7 @@ function App() {
       </section>
 
       {/* Footer */}
-      <footer className="footer">
+      <footer className="App-footer">
         <p>© {new Date().getFullYear()} Rohitha Channamallu | Built with React ⚛️</p>
       </footer>
     </div>

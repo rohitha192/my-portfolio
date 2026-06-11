@@ -145,3 +145,34 @@
 .demo-btn:hover {
   background: #512da8;
 }
+
+@media (max-width: 768px) {
+  .projects-section {
+    padding: 40px 12px;
+  }
+
+  .projects-title {
+    font-size: 1.75rem;
+  }
+
+  .github-profile-link {
+    width: 100%;
+    max-width: 320px;
+    justify-content: center;
+    margin-bottom: 28px;
+  }
+
+  .projects-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .project-content h3 {
+    font-size: 1.2rem;
+  }
+
+  .overlay {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.55);
+  }
+}

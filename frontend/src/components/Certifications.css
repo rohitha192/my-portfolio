@@ -78,4 +78,15 @@
   .cert-image {
     max-height: 180px;
   }
+
+  .cert-section-title {
+    font-size: 1.4rem;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .cert-grid {
+    grid-template-columns: 1fr;
+  }
 }

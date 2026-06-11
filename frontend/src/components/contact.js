@@ -19,7 +19,9 @@ function Contact() {
       setStatus("Sending...");
       const apiBase =
         process.env.REACT_APP_API_URL ||
-        "https://my-portfolio-backend-w581.onrender.com";
+        (process.env.NODE_ENV === "development"
+          ? "http://localhost:5000"
+          : "https://my-portfolio-backend-w581.onrender.com");
       const res = await axios.post(
         `${apiBase}/contact`,
         { email, message },

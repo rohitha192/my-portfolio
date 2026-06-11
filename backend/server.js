@@ -9,13 +9,22 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // ------------------ Middleware ------------------
+const allowedOrigins = [
+  "http://localhost:3000",
+  ...(process.env.FRONTEND_URL
+    ? process.env.FRONTEND_URL.split(",").map((url) => url.trim())
+    : []),
+];
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
-      /\.vercel\.app$/,
-    ],
+    origin(origin, callback) {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      if (/\.vercel\.app$/i.test(origin)) return callback(null, true);
+      if (/\.onrender\.com$/i.test(origin)) return callback(null, true);
+      callback(null, true);
+    },
   })
 );
 app.use(bodyParser.json());
@@ -60,7 +69,24 @@ function createMailTransporter() {
     port: 587,
     secure: false,
     auth: { user, pass },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
   });
+}
+
+async function sendContactEmail({ user, receiver, email, message }) {
+  const transporter = createMailTransporter();
+
+  const info = await transporter.sendMail({
+    from: `"Portfolio Contact" <${user}>`,
+    replyTo: email,
+    to: receiver,
+    subject: "New Contact Message",
+    text: `From: ${email}\n\nMessage:\n${message}`,
+  });
+
+  console.log(`Email sent to ${receiver}:`, info.response);
 }
 
 // ------------------ Routes ------------------
@@ -137,24 +163,10 @@ app.post("/contact", async (req, res) => {
     const { user, pass, receiver } = getEmailConfig();
     const hasEmailConfig = user && pass && receiver;
 
-    if (!hasEmailConfig) {
-      return res.json({ msg: "Message sent successfully!" });
-    }
-
-    try {
-      const transporter = createMailTransporter();
-
-      const info = await transporter.sendMail({
-        from: `"Portfolio Contact" <${user}>`,
-        replyTo: email,
-        to: receiver,
-        subject: "New Contact Message",
-        text: `From: ${email}\n\nMessage:\n${message}`,
+    if (hasEmailConfig) {
+      sendContactEmail({ user, receiver, email, message }).catch((emailError) => {
+        console.error("Email error:", emailError.message);
       });
-
-      console.log(`Email sent to ${receiver}:`, info.response);
-    } catch (emailError) {
-      console.error("Email error:", emailError.message);
     }
 
     return res.json({ msg: "Message sent successfully!" });

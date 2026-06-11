@@ -5,7 +5,8 @@
   padding: 40px;
   border-radius: 12px;
   box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
-  width: 350px;
+  width: 100%;
+  max-width: 420px;
   margin: auto;
 }
 
@@ -63,4 +64,28 @@
 
 .contact-form button:hover {
   background: #38b2ac;
+}
+
+.contact-form input,
+.contact-form textarea {
+  width: 100%;
+}
+
+.status {
+  margin-top: 16px;
+  font-size: 0.9rem;
+  color: #cbd5e1;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+@media (max-width: 768px) {
+  .contact-container {
+    padding: 24px 16px;
+    max-width: 100%;
+  }
+
+  .contact-container h2 {
+    font-size: 1.35rem;
+  }
 }
