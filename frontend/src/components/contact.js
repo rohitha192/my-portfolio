@@ -7,9 +7,8 @@ function Contact() {
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState("");
 
-  // Changed to accept the form event 'e'
   const handleSend = async (e) => {
-    e.preventDefault(); // 🔥 Stops the page from reloading on form submit
+    e.preventDefault();
 
     if (!email || !message) {
       alert("Please fill in all fields.");
@@ -20,9 +19,7 @@ function Contact() {
       setStatus("Sending...");
       const apiBase =
         process.env.REACT_APP_API_URL ||
-        (process.env.NODE_ENV === "development"
-          ? "http://localhost:5000"
-          : "");
+        "https://my-portfolio-backend-w581.onrender.com";
       const res = await axios.post(`${apiBase}/contact`, {
         email,
         message,
@@ -41,26 +38,24 @@ function Contact() {
         Contact <span>Me</span>
       </h2>
       <p>Feel free to reach out for collaborations</p>
-      
-      {/* 1. Wrapped inputs in a <form> tag with onSubmit */}
+
       <form className="contact-form" onSubmit={handleSend}>
         <input
           type="email"
           placeholder="Your Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          required // Browser-level validation
+          required
         />
         <textarea
           placeholder="Your Message"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          required // Browser-level validation
+          required
         />
-        {/* 2. Changed button to type="submit" */}
         <button type="submit">📩 Send Message</button>
       </form>
-      
+
       {status && <p className="status">{status}</p>}
     </div>
   );
