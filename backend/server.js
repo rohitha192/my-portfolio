@@ -43,6 +43,19 @@ function isDbConnected() {
   return mongoose.connection.readyState === 1;
 }
 
+function redactMongoUri(uri) {
+  if (!uri) return "(not set)";
+  return uri.replace(/\/\/([^:]+):([^@]+)@/, "//$1:***@");
+}
+
+function logMongoStatus(context) {
+  const states = ["disconnected", "connected", "connecting", "disconnecting"];
+  const state = states[mongoose.connection.readyState] || "unknown";
+  console.log(
+    `[MongoDB${context ? ` · ${context}` : ""}] state=${state}, db="${mongoose.connection.name || "n/a"}"`
+  );
+}
+
 // ------------------ Models ------------------
 const Project = require("./models/Project");
 const About = require("./models/About");
@@ -76,6 +89,8 @@ function createMailTransporter() {
 }
 
 async function sendContactEmail({ user, receiver, email, message }) {
+  console.log(`[Contact · email] sending notification to ${receiver} (from visitor: ${email})`);
+
   const transporter = createMailTransporter();
 
   const info = await transporter.sendMail({
@@ -86,7 +101,7 @@ async function sendContactEmail({ user, receiver, email, message }) {
     text: `From: ${email}\n\nMessage:\n${message}`,
   });
 
-  console.log(`Email sent to ${receiver}:`, info.response);
+  console.log(`[Contact · email] sent successfully → ${receiver}: ${info.response}`);
 }
 
 // ------------------ Routes ------------------
@@ -146,11 +161,19 @@ app.post("/projects", async (req, res) => {
 app.post("/contact", async (req, res) => {
   const { email, message } = req.body;
 
+  console.log("[Contact] request received", {
+    email,
+    messageLength: message?.length || 0,
+    dbConnected: isDbConnected(),
+  });
+
   if (!email || !message) {
+    console.log("[Contact] rejected — missing fields");
     return res.status(400).json({ msg: "All fields are required" });
   }
 
   if (!isDbConnected()) {
+    logMongoStatus("contact blocked");
     return res.status(503).json({
       msg: "Database unavailable. Please try again in a moment.",
     });
@@ -159,19 +182,29 @@ app.post("/contact", async (req, res) => {
   try {
     const newMessage = new Contact({ email, message });
     await newMessage.save();
+    console.log("[Contact · db] message saved", { id: newMessage._id.toString() });
 
     const { user, pass, receiver } = getEmailConfig();
     const hasEmailConfig = user && pass && receiver;
 
+    console.log("[Contact · email] config check", {
+      hasEmailUser: !!user,
+      hasEmailPass: !!pass,
+      receiver: receiver || "(not set)",
+      willSendEmail: hasEmailConfig,
+    });
+
     if (hasEmailConfig) {
       sendContactEmail({ user, receiver, email, message }).catch((emailError) => {
-        console.error("Email error:", emailError.message);
+        console.error("[Contact · email] failed:", emailError.message);
       });
+    } else {
+      console.log("[Contact · email] skipped — EMAIL_USER, EMAIL_PASS, or RECEIVER_EMAIL missing");
     }
 
     return res.json({ msg: "Message sent successfully!" });
   } catch (error) {
-    console.error("Error:", error);
+    console.error("[Contact] failed:", error.message);
     res.status(500).json({ msg: "Failed to send message." });
   }
 });
@@ -179,25 +212,42 @@ app.post("/contact", async (req, res) => {
 
 // ------------------ Start Server ------------------
 async function startServer() {
+  mongoose.connection.on("connected", () => logMongoStatus("event connected"));
+  mongoose.connection.on("disconnected", () => logMongoStatus("event disconnected"));
+  mongoose.connection.on("error", (err) => {
+    console.error("[MongoDB · error]", err.message);
+  });
+
+  console.log("[MongoDB] connecting to", redactMongoUri(MONGODB_URI));
+
   try {
     await mongoose.connect(MONGODB_URI, mongoOptions);
     console.log("✅ MongoDB connected");
+    logMongoStatus("startup");
   } catch (err) {
     console.error("❌ MongoDB connection error:", err.message);
+    logMongoStatus("startup failed");
     console.error(
       "   Set MONGODB_URI on Render and allow 0.0.0.0/0 in Atlas Network Access."
     );
   }
 
   app.listen(PORT, () => {
-    const { user, receiver } = getEmailConfig();
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-    if (user && receiver) {
+    const { user, pass, receiver } = getEmailConfig();
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log("[MongoDB] MONGODB_URI set:", !!process.env.MONGODB_URI);
+    logMongoStatus("server ready");
+    if (user && pass && receiver) {
       console.log(`📧 Email notifications enabled for ${receiver}`);
     } else {
       console.log(
         "📧 Email notifications disabled — set EMAIL_USER, EMAIL_PASS, RECEIVER_EMAIL in .env"
       );
+      console.log("[Contact · email] env check", {
+        hasEmailUser: !!user,
+        hasEmailPass: !!pass,
+        hasReceiver: !!receiver,
+      });
     }
     console.log("   Restart this server after any .env changes.");
   });
