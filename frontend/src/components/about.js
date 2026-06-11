@@ -10,6 +10,7 @@ function About() {
         in React, Node.js, and the MERN stack. I love building web apps and
         solving real-world problems.
       </p>
+      
 
       {/* Personal + Professional + Interests side by side */}
       <div className="info-sections-grid">
