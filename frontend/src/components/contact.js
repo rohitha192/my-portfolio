@@ -20,14 +20,21 @@ function Contact() {
       const apiBase =
         process.env.REACT_APP_API_URL ||
         "https://my-portfolio-backend-w581.onrender.com";
-      const res = await axios.post(`${apiBase}/contact`, {
-        email,
-        message,
-      });
+      const res = await axios.post(
+        `${apiBase}/contact`,
+        { email, message },
+        { timeout: 30000 }
+      );
       setStatus(res.data.msg || "Message sent successfully!");
       setEmail("");
       setMessage("");
     } catch (err) {
+      if (!err.response) {
+        setStatus(
+          "Could not reach the server. If this persists, the backend may be waking up — try again in a minute."
+        );
+        return;
+      }
       setStatus(err.response?.data?.msg || "Failed to send message.");
     }
   };

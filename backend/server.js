@@ -24,10 +24,15 @@ app.use(bodyParser.json());
 const MONGODB_URI =
   process.env.MONGODB_URI || "mongodb://localhost:27017/portfolio";
 
-mongoose
-  .connect(MONGODB_URI)
-  .then(() => console.log("✅ MongoDB connected"))
-  .catch((err) => console.error("❌ MongoDB connection error:", err));
+mongoose.set("bufferCommands", false);
+
+const mongoOptions = {
+  serverSelectionTimeoutMS: 10000,
+};
+
+function isDbConnected() {
+  return mongoose.connection.readyState === 1;
+}
 
 // ------------------ Models ------------------
 const Project = require("./models/Project");
@@ -63,6 +68,13 @@ function createMailTransporter() {
 // Root test route
 app.get("/", (req, res) => {
   res.send("🚀 Express server is running!");
+});
+
+app.get("/health", (req, res) => {
+  res.json({
+    ok: isDbConnected(),
+    db: isDbConnected() ? "connected" : "disconnected",
+  });
 });
 
 // Optional test projects
@@ -112,6 +124,12 @@ app.post("/contact", async (req, res) => {
     return res.status(400).json({ msg: "All fields are required" });
   }
 
+  if (!isDbConnected()) {
+    return res.status(503).json({
+      msg: "Database unavailable. Please try again in a moment.",
+    });
+  }
+
   try {
     const newMessage = new Contact({ email, message });
     await newMessage.save();
@@ -148,13 +166,29 @@ app.post("/contact", async (req, res) => {
 
 
 // ------------------ Start Server ------------------
-app.listen(PORT, () => {
-  const { user, receiver } = getEmailConfig();
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-  if (user && receiver) {
-    console.log(`📧 Email notifications enabled for ${receiver}`);
-  } else {
-    console.log("📧 Email notifications disabled — set EMAIL_USER, EMAIL_PASS, RECEIVER_EMAIL in .env");
+async function startServer() {
+  try {
+    await mongoose.connect(MONGODB_URI, mongoOptions);
+    console.log("✅ MongoDB connected");
+  } catch (err) {
+    console.error("❌ MongoDB connection error:", err.message);
+    console.error(
+      "   Set MONGODB_URI on Render and allow 0.0.0.0/0 in Atlas Network Access."
+    );
   }
-  console.log("   Restart this server after any .env changes.");
-});
+
+  app.listen(PORT, () => {
+    const { user, receiver } = getEmailConfig();
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    if (user && receiver) {
+      console.log(`📧 Email notifications enabled for ${receiver}`);
+    } else {
+      console.log(
+        "📧 Email notifications disabled — set EMAIL_USER, EMAIL_PASS, RECEIVER_EMAIL in .env"
+      );
+    }
+    console.log("   Restart this server after any .env changes.");
+  });
+}
+
+startServer();
